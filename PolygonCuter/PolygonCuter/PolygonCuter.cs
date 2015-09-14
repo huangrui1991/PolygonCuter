@@ -12,6 +12,7 @@ using System.Text;
 using ESRI.ArcGIS.Display;
 using ESRI.ArcGIS.Carto;
 using ESRI.ArcGIS.Geometry;
+using ESRI.ArcGIS.Geodatabase;
 
 namespace PolygonCuter
 {
@@ -21,6 +22,9 @@ namespace PolygonCuter
         private bool m_isMouseDown = false;
         private INewLineFeedback m_lineFeedback = null;
         private IPoint m_currentPoint = null;
+        private IPolyline m_line = null;
+        private IPolygon m_polygon = null;
+        private IFeature m_feature = null;
 
 
         public PolygonCuter()
@@ -29,8 +33,19 @@ namespace PolygonCuter
 
         protected override void OnActivate()
         {
+            //set cursor image
             Stream sm = this.GetType().Assembly.GetManifestResourceStream("PolygonCuter.Images.Sketch.cur");
             this.Cursor = new System.Windows.Forms.Cursor(sm);
+
+            //get selected feature
+            IEnumFeature Features = ArcMap.Document.FocusMap.FeatureSelection as IEnumFeature;
+            if (Features != null)
+            {
+                 Features.Reset();
+                 m_feature = Features.Next();
+            }
+            
+
             
         }
 
@@ -63,6 +78,22 @@ namespace PolygonCuter
             if (m_lineFeedback == null)
                 return;
             m_lineFeedback.MoveTo(m_currentPoint);
+        }
+
+        protected override void OnDoubleClick()
+        {
+            IPolyline line = null;
+            if (m_lineFeedback != null)
+                line = m_lineFeedback.Stop();
+
+            if (line != null)
+                m_line = line;
+
+            m_lineFeedback = null;
+            m_isMouseDown = false;
+            
+            
+            
         }
 
     }
