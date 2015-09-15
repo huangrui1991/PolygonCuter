@@ -14,6 +14,7 @@ using ESRI.ArcGIS.Carto;
 using ESRI.ArcGIS.Geometry;
 using ESRI.ArcGIS.Geodatabase;
 using ESRI.ArcGIS.esriSystem;
+using System.Windows.Forms;
 
 namespace PolygonCuter
 {
@@ -50,6 +51,16 @@ namespace PolygonCuter
             
         }
 
+        protected override bool OnDeactivate()
+        {
+            ArcMap.Document.ActiveView.PartialRefresh(esriViewDrawPhase.esriViewGeography, null, null);
+            m_lineFeedback = null;
+            m_isMouseDown = false;
+            return false;
+        }
+
+       
+
         protected override void OnUpdate()
         {
             Enabled = ArcMap.Application != null;
@@ -83,59 +94,59 @@ namespace PolygonCuter
 
         protected override void OnDoubleClick()
         {
-            IPolyline line = null;
-            if (m_lineFeedback != null)
-                line = m_lineFeedback.Stop();
-
-            if (line != null)
-                m_line = line;
-
-            m_lineFeedback = null;
-            m_isMouseDown = false;
-
-            //IFeatureEdit2 FeatureEdit = m_feature as IFeatureEdit2;
-            //ISet Set = FeatureEdit.SplitWithUpdate(m_line);
-            //IPolygon p1 = Set.Next() as IPolygon;
-            //IPolygon p2 = Set.Next() as IPolygon;
-            //IArea a1 = p1 as IArea;
-            //IArea a2 = p2 as IArea;
-            //double area1 = a1.Area;
-            //double area2 = a2.Area;
-            
-            //ArcMap.Document.ActiveView.PartialRefresh(esriViewDrawPhase.esriViewGeography, null, null);
-
-
-            //get current Feature layer
-            IMap Map = ArcMap.Document.FocusMap;
-            IEnumLayer Layers = Map.Layers;
-            ILayer Layer = Layers.Next();
-            while (Layer.Name != "TBM")
+            try
             {
-                Layer = Layers.Next();
+                IPolyline line = null;
+                if (m_lineFeedback != null)
+                    line = m_lineFeedback.Stop();
+
+                if (line != null)
+                    m_line = line;
+
+                m_lineFeedback = null;
+                m_isMouseDown = false;
+
+                if (m_feature == null)
+                    return;
+
+                //get current Feature layer
+                IMap Map = ArcMap.Document.FocusMap;
+                IEnumLayer Layers = Map.Layers;
+                ILayer Layer = Layers.Next();
+                while (Layer.Name != "TBM")
+                {
+                    Layer = Layers.Next();
+                }
+                if (Layer == null)
+                    return;
+                Map.ClearSelection();
+                IFeatureLayer FeatureLyr = Layer as IFeatureLayer;
+                IFeatureClass FeatureCls = FeatureLyr.FeatureClass;
+
+                //cut feature
+                IGeometry Geo = m_feature.Shape;
+                ITopologicalOperator4 Topo = Geo as ITopologicalOperator4;
+                IGeometryCollection GeometryCollection = new GeometryBagClass();
+                GeometryCollection = Topo.Cut2(m_line);
+                //if (GeometryCollection.GeometryCount == 0 || GeometryCollection.GeometryCount > 2)
+                //    return;
+
+                //store feature
+                int count = GeometryCollection.GeometryCount;
+                IGeometry Geo1 = GeometryCollection.get_Geometry(0);
+                m_feature.Shape = Geo1;
+                IGeometry Geo2 = GeometryCollection.get_Geometry(1);
+                IFeature NewFeature = FeatureCls.CreateFeature();
+                NewFeature.Shape = Geo2;
+                NewFeature.Store();
+                m_feature.Store();
+                ArcMap.Document.ActiveView.PartialRefresh(esriViewDrawPhase.esriViewGeography, null, null);
             }
-            if (Layer == null)
-                return;
-            Map.ClearSelection();
-            IFeatureLayer FeatureLyr = Layer as IFeatureLayer;
-            IFeatureClass FeatureCls = FeatureLyr.FeatureClass;
-
-            //cut feature
-            IGeometry Geo = m_feature.Shape;
-            ITopologicalOperator4 Topo = Geo as ITopologicalOperator4;
-            IGeometryCollection GeometryCollection = new GeometryBagClass();
-            GeometryCollection = Topo.Cut2(m_line);
+            catch
+            {
+                MessageBox.Show("分割失败！");
+            }
             
-
-            //store feature
-            int count = GeometryCollection.GeometryCount;
-            IGeometry Geo1 = GeometryCollection.get_Geometry(0);
-            m_feature.Shape = Geo1;
-            IGeometry Geo2 = GeometryCollection.get_Geometry(1);
-            IFeature NewFeature = FeatureCls.CreateFeature();
-            NewFeature.Shape = Geo2;
-            NewFeature.Store();
-            m_feature.Store();
-            ArcMap.Document.ActiveView.PartialRefresh(esriViewDrawPhase.esriViewGeography, null, null);
 
             
         }
