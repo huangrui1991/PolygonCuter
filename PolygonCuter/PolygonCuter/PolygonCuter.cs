@@ -118,7 +118,10 @@ namespace PolygonCuter
                     Layer = Layers.Next();
                 }
                 if (Layer == null)
+                {
+                    MessageBox.Show("获取图层TBM失败");
                     return;
+                }
                 Map.ClearSelection();
                 IFeatureLayer FeatureLyr = Layer as IFeatureLayer;
                 IFeatureClass FeatureCls = FeatureLyr.FeatureClass;
@@ -128,8 +131,77 @@ namespace PolygonCuter
                 ITopologicalOperator4 Topo = Geo as ITopologicalOperator4;
                 IGeometryCollection GeometryCollection = new GeometryBagClass();
                 GeometryCollection = Topo.Cut2(m_line);
-                //if (GeometryCollection.GeometryCount == 0 || GeometryCollection.GeometryCount > 2)
-                //    return;
+
+                if (GeometryCollection.GeometryCount == 0 || GeometryCollection.GeometryCount > 2)
+                {
+                    MessageBox.Show("分割失败！");
+                    return;
+                }
+                IEnvelope Env = m_feature.Extent;
+                IPoint LowerLeft = Env.LowerLeft;
+                IPoint UpperLeft = Env.UpperLeft;
+                IPoint LowerRight = Env.LowerRight;
+                IPoint UpperRight = Env.UpperRight;
+                IPoint BeginPoint = m_line.FromPoint;
+                IPoint EndPoint = m_line.ToPoint;
+                double tan1 = (UpperLeft.Y - LowerRight.Y) / (UpperLeft.X - LowerRight.X);
+                double tan2 = (LowerLeft.Y - UpperRight.Y) / (LowerLeft.X - UpperRight.X);
+                double tanl = (EndPoint.Y - BeginPoint.Y) / (EndPoint.X - BeginPoint.X);
+
+                IArea Area1 = GeometryCollection.get_Geometry(0) as IArea;
+                IArea Area2 = GeometryCollection.get_Geometry(1) as IArea;
+                ILine Direction = new LineClass();
+                //左右移动line
+                IPoint Centroid1 = Area1.Centroid;
+                IPoint Centroid2 = Area2.Centroid;
+                if (tanl >= tan1 || tanl <= tan2)
+                {
+                    IPoint DirBeginPoint = new PointClass();
+                    IPoint DirEndPoint = new PointClass();
+                    if ((int)Area1.Area > (int)Area2.Area)
+                    {
+                        DirBeginPoint.Y = 0;
+                        DirBeginPoint.X = 0;
+                        DirEndPoint.Y = 0;
+                        DirBeginPoint.X = Centroid2.X - Centroid1.X;
+                        Direction.FromPoint = DirBeginPoint;
+                        Direction.ToPoint = DirEndPoint;
+                        
+                    }
+                    else
+                    {
+                            Direction.FromPoint = DirEndPoint;
+                            Direction.ToPoint = DirBeginPoint;
+                    }
+
+                }
+                else if (tanl > tan2 && tanl < tan1)
+                {
+                    IPoint DirBeginPoint = new PointClass();
+                    IPoint DirEndPoint = new PointClass();
+                    if ((int)Area1.Area > (int)Area2.Area)
+                    {
+                        DirBeginPoint.Y = 0;
+                        DirBeginPoint.X = 0;
+                        DirEndPoint.Y = Centroid2.Y - Centroid1.Y;
+                        DirBeginPoint.X = 0;
+                        Direction.FromPoint = DirBeginPoint;
+                        Direction.ToPoint = DirEndPoint;
+
+                    }
+                    else
+                    {
+                        Direction.FromPoint = DirEndPoint;
+                        Direction.ToPoint = DirBeginPoint;
+                    }
+                }
+
+                
+                while ((int)Area1.Area != (int)Area2.Area)
+                {
+                    
+                }
+
 
                 //store feature
                 int count = GeometryCollection.GeometryCount;
@@ -142,7 +214,7 @@ namespace PolygonCuter
                 m_feature.Store();
                 ArcMap.Document.ActiveView.PartialRefresh(esriViewDrawPhase.esriViewGeography, null, null);
             }
-            catch
+            catch(Exception e)
             {
                 MessageBox.Show("分割失败！");
             }
