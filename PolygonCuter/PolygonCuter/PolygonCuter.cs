@@ -170,8 +170,12 @@ namespace PolygonCuter
                     }
                     else
                     {
-                            Direction.FromPoint = DirEndPoint;
-                            Direction.ToPoint = DirBeginPoint;
+                        DirBeginPoint.Y = 0;
+                        DirBeginPoint.X = 0;
+                        DirEndPoint.Y = 0;
+                        DirBeginPoint.X = Centroid1.X - Centroid2.X;
+                        Direction.FromPoint = DirBeginPoint;
+                        Direction.ToPoint = DirEndPoint;
                     }
 
                 }
@@ -191,15 +195,19 @@ namespace PolygonCuter
                     }
                     else
                     {
-                        Direction.FromPoint = DirEndPoint;
-                        Direction.ToPoint = DirBeginPoint;
+                        DirBeginPoint.Y = 0;
+                        DirBeginPoint.X = 0;
+                        DirEndPoint.Y = Centroid1.Y - Centroid2.Y;
+                        DirBeginPoint.X = 0;
+                        Direction.FromPoint = DirBeginPoint;
+                        Direction.ToPoint = DirEndPoint;
                     }
                 }
 
                 
                 while ((int)Area1.Area != (int)Area2.Area)
                 {
-                    
+                    break;
                 }
 
 
