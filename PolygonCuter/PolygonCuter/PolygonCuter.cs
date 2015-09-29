@@ -53,10 +53,11 @@ namespace PolygonCuter
 
         protected override bool OnDeactivate()
         {
+            base.OnDeactivate();
             ArcMap.Document.ActiveView.PartialRefresh(esriViewDrawPhase.esriViewGeography, null, null);
             m_lineFeedback = null;
             m_isMouseDown = false;
-            return false;
+            return true;
         }
 
 
@@ -163,12 +164,12 @@ namespace PolygonCuter
                 if (tanl >= tan1 || tanl <= tan2)
                 {
                     Direction.Y = 0;
-                    Direction.X = 0;
+                    Direction.X = CentroidBigger.X - CentroidSmaller.X;
                 }
                 else if (tanl > tan2 && tanl < tan1)
                 {
                     Direction.X = 0;
-                    Direction.Y = 0;
+                    Direction.Y = CentroidBigger.Y - CentroidSmaller.Y;
                 }
 
 
@@ -191,6 +192,7 @@ namespace PolygonCuter
                 NewFeature.Store();
                 m_feature.Store();
                 ArcMap.Document.ActiveView.PartialRefresh(esriViewDrawPhase.esriViewGeography, null, null);
+                OnDeactivate();
             }
             catch (Exception e)
             {
