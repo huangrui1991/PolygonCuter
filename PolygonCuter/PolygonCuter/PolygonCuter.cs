@@ -43,12 +43,12 @@ namespace PolygonCuter
             IEnumFeature Features = ArcMap.Document.FocusMap.FeatureSelection as IEnumFeature;
             if (Features != null)
             {
-                 Features.Reset();
-                 m_feature = Features.Next();
+                Features.Reset();
+                m_feature = Features.Next();
             }
             if (m_feature == null)
                 return;
-            
+
         }
 
         protected override bool OnDeactivate()
@@ -59,7 +59,7 @@ namespace PolygonCuter
             return false;
         }
 
-       
+
 
         protected override void OnUpdate()
         {
@@ -148,68 +148,38 @@ namespace PolygonCuter
                 double tan2 = (LowerLeft.Y - UpperRight.Y) / (LowerLeft.X - UpperRight.X);
                 double tanl = (EndPoint.Y - BeginPoint.Y) / (EndPoint.X - BeginPoint.X);
 
-                IArea Area1 = GeometryCollection.get_Geometry(0) as IArea;
-                IArea Area2 = GeometryCollection.get_Geometry(1) as IArea;
-                ILine Direction = new LineClass();
-                //左右移动line
-                IPoint Centroid1 = Area1.Centroid;
-                IPoint Centroid2 = Area2.Centroid;
+                IArea AreaBigger = GeometryCollection.get_Geometry(0) as IArea;
+                IArea AreaSmaller = GeometryCollection.get_Geometry(1) as IArea;
+                if (AreaBigger.Area < AreaSmaller.Area)
+                {
+                    IArea temp = AreaBigger;
+                    AreaBigger = AreaSmaller;
+                    AreaSmaller = temp;
+                }
+                IPoint Direction = new Point();
+                //move cutline by directionline
+                IPoint CentroidBigger = AreaBigger.Centroid;
+                IPoint CentroidSmaller = AreaSmaller.Centroid;
                 if (tanl >= tan1 || tanl <= tan2)
                 {
-                    IPoint DirBeginPoint = new PointClass();
-                    IPoint DirEndPoint = new PointClass();
-                    if ((int)Area1.Area > (int)Area2.Area)
-                    {
-                        DirBeginPoint.Y = 0;
-                        DirBeginPoint.X = 0;
-                        DirEndPoint.Y = 0;
-                        DirBeginPoint.X = Centroid2.X - Centroid1.X;
-                        Direction.FromPoint = DirBeginPoint;
-                        Direction.ToPoint = DirEndPoint;
-                        
-                    }
-                    else
-                    {
-                        DirBeginPoint.Y = 0;
-                        DirBeginPoint.X = 0;
-                        DirEndPoint.Y = 0;
-                        DirBeginPoint.X = Centroid1.X - Centroid2.X;
-                        Direction.FromPoint = DirBeginPoint;
-                        Direction.ToPoint = DirEndPoint;
-                    }
-
+                    Direction.Y = 0;
+                    Direction.X = 0;
                 }
                 else if (tanl > tan2 && tanl < tan1)
                 {
-                    IPoint DirBeginPoint = new PointClass();
-                    IPoint DirEndPoint = new PointClass();
-                    if ((int)Area1.Area > (int)Area2.Area)
-                    {
-                        DirBeginPoint.Y = 0;
-                        DirBeginPoint.X = 0;
-                        DirEndPoint.Y = Centroid2.Y - Centroid1.Y;
-                        DirBeginPoint.X = 0;
-                        Direction.FromPoint = DirBeginPoint;
-                        Direction.ToPoint = DirEndPoint;
-
-                    }
-                    else
-                    {
-                        DirBeginPoint.Y = 0;
-                        DirBeginPoint.X = 0;
-                        DirEndPoint.Y = Centroid1.Y - Centroid2.Y;
-                        DirBeginPoint.X = 0;
-                        Direction.FromPoint = DirBeginPoint;
-                        Direction.ToPoint = DirEndPoint;
-                    }
+                    Direction.X = 0;
+                    Direction.Y = 0;
                 }
 
-                
-                while ((int)Area1.Area != (int)Area2.Area)
+
+                while ((int)AreaBigger.Area != (int)AreaSmaller.Area)
                 {
+                    ESRI.ArcGIS.Geometry.ITransform2D transform2D = m_line as ESRI.ArcGIS.Geometry.ITransform2D;
+                    transform2D.Move(Direction.X, Direction.Y);
+                    GeometryCollection.RemoveGeometries(0, 2);
+                    GeometryCollection = Topo.Cut2(transform2D as IPolyline);
                     break;
                 }
-
 
                 //store feature
                 int count = GeometryCollection.GeometryCount;
@@ -222,15 +192,12 @@ namespace PolygonCuter
                 m_feature.Store();
                 ArcMap.Document.ActiveView.PartialRefresh(esriViewDrawPhase.esriViewGeography, null, null);
             }
-            catch(Exception e)
+            catch (Exception e)
             {
-                MessageBox.Show("分割失败！");
+                MessageBox.Show(e.Message);
             }
-            
 
-            
         }
-
     }
-
 }
+        
