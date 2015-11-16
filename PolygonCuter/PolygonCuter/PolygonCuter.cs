@@ -5,13 +5,9 @@ using System.IO;
 using ESRI.ArcGIS.Geometry;
 
 using ESRI.ArcGIS.Controls;
-using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using ESRI.ArcGIS.Display;
 using ESRI.ArcGIS.Carto;
-using ESRI.ArcGIS.Geometry;
 using ESRI.ArcGIS.Geodatabase;
 using ESRI.ArcGIS.esriSystem;
 using System.Windows.Forms;
@@ -25,7 +21,6 @@ namespace PolygonCuter
         private INewLineFeedback m_lineFeedback = null;
         private IPoint m_currentPoint = null;
         private IPolyline m_line = null;
-        private IPolygon m_polygon = null;
         private IFeature m_feature = null;
 
 
@@ -161,25 +156,63 @@ namespace PolygonCuter
                 //move cutline by directionline
                 IPoint CentroidBigger = AreaBigger.Centroid;
                 IPoint CentroidSmaller = AreaSmaller.Centroid;
+                IPoint CentroidLine = new Point();
+                CentroidLine.X = (BeginPoint.X + EndPoint.X) / 2;
+                CentroidLine.Y = (BeginPoint.Y + EndPoint.Y) / 2;
+
+                bool AreaBigLocal = false;
                 if (tanl >= tan1 || tanl <= tan2)
                 {
                     Direction.Y = 0;
-                    Direction.X = CentroidBigger.X - CentroidSmaller.X;
+                    Direction.X = (CentroidBigger.X - CentroidSmaller.X) / 2;
+                    AreaBigLocal = CentroidBigger.X < ((Geo as IArea).Centroid.X);
                 }
                 else if (tanl > tan2 && tanl < tan1)
                 {
                     Direction.X = 0;
-                    Direction.Y = CentroidBigger.Y - CentroidSmaller.Y;
+                    Direction.Y = (CentroidBigger.Y - CentroidSmaller.Y) / 2;
+                    AreaBigLocal = CentroidBigger.Y < ((Geo as IArea).Centroid.Y);
                 }
 
 
-                while ((int)AreaBigger.Area != (int)AreaSmaller.Area)
+                 while ((int)AreaBigger.Area != (int)AreaSmaller.Area)
                 {
-                    ESRI.ArcGIS.Geometry.ITransform2D transform2D = m_line as ESRI.ArcGIS.Geometry.ITransform2D;
-                    transform2D.Move(Direction.X, Direction.Y);
+                    ESRI.ArcGIS.Geometry.ITransform2D Transform2D = m_line as ESRI.ArcGIS.Geometry.ITransform2D;
+                    Transform2D.Move(Direction.X, Direction.Y);
+                    IPolyline CurrentLine = Transform2D as IPolyline;
+                    IPoint CurrentCentroidLine = new Point();
+                    CurrentCentroidLine.X = (CurrentLine.FromPoint.X + CurrentLine.ToPoint.X) / 2;
+                    CurrentCentroidLine.Y = (CurrentLine.FromPoint.Y + CurrentLine.ToPoint.Y) / 2;
+                     
+                     //update Geometry
                     GeometryCollection.RemoveGeometries(0, 2);
-                    GeometryCollection = Topo.Cut2(transform2D as IPolyline);
-                    break;
+                    GeometryCollection = Topo.Cut2(Transform2D as IPolyline);
+                    AreaBigger = GeometryCollection.get_Geometry(0) as IArea;
+                    AreaSmaller = GeometryCollection.get_Geometry(1) as IArea;
+                    if (AreaBigger.Area < AreaSmaller.Area)
+                    {
+                        IArea temp = AreaBigger;
+                        AreaBigger = AreaSmaller;
+                        AreaSmaller = temp;
+                    }
+
+                    //update direction
+                    if (tanl >= tan1 || tanl <= tan2)
+                    {
+                        if (AreaBigLocal != ((AreaBigger.Centroid.X) < ((Geo as IArea).Centroid.X)))
+                        {
+                            Direction.X = -Direction.X / 2;
+                            AreaBigLocal = ((AreaBigger.Centroid.X) < ((Geo as IArea).Centroid.X));
+                        }
+                    }
+                    else if (tanl > tan2 && tanl < tan1)
+                    {
+                        if (AreaBigLocal != ((AreaBigger.Centroid.Y) < ((Geo as IArea).Centroid.Y)))
+                        {
+                            Direction.X = -Direction.X / 2;
+                            AreaBigLocal = ((AreaBigger.Centroid.Y) < ((Geo as IArea).Centroid.Y));
+                        }
+                    }
                 }
 
                 //store feature
@@ -192,7 +225,7 @@ namespace PolygonCuter
                 NewFeature.Store();
                 m_feature.Store();
                 ArcMap.Document.ActiveView.PartialRefresh(esriViewDrawPhase.esriViewGeography, null, null);
-                OnDeactivate();
+                
             }
             catch (Exception e)
             {
