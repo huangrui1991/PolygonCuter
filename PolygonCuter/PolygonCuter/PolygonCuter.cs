@@ -140,9 +140,9 @@ namespace PolygonCuter
                 IPoint UpperRight = Env.UpperRight;
                 IPoint BeginPoint = m_line.FromPoint;
                 IPoint EndPoint = m_line.ToPoint;
-                double tan1 = (UpperLeft.Y - LowerRight.Y) / (UpperLeft.X - LowerRight.X);
-                double tan2 = (LowerLeft.Y - UpperRight.Y) / (LowerLeft.X - UpperRight.X);
-                double tanl = (EndPoint.Y - BeginPoint.Y) / (EndPoint.X - BeginPoint.X);
+                double Tan1 = (UpperLeft.Y - LowerRight.Y) / (UpperLeft.X - LowerRight.X);
+                double Tan2 = (LowerLeft.Y - UpperRight.Y) / (LowerLeft.X - UpperRight.X);
+                double Tanl = (EndPoint.Y - BeginPoint.Y) / (EndPoint.X - BeginPoint.X);
 
                 IArea AreaBigger = GeometryCollection.get_Geometry(0) as IArea;
                 IArea AreaSmaller = GeometryCollection.get_Geometry(1) as IArea;
@@ -161,13 +161,13 @@ namespace PolygonCuter
                 CentroidLine.Y = (BeginPoint.Y + EndPoint.Y) / 2;
 
                 bool AreaBigLocal = false;
-                if (tanl >= tan1 || tanl <= tan2)
+                if (Tanl <= Tan1 || Tanl >= Tan2)
                 {
                     Direction.Y = 0;
                     Direction.X = (CentroidBigger.X - CentroidSmaller.X) / 2;
                     AreaBigLocal = CentroidBigger.X < ((Geo as IArea).Centroid.X);
                 }
-                else if (tanl > tan2 && tanl < tan1)
+                else if (Tanl > Tan2 && Tanl < Tan1)
                 {
                     Direction.X = 0;
                     Direction.Y = (CentroidBigger.Y - CentroidSmaller.Y) / 2;
@@ -197,7 +197,7 @@ namespace PolygonCuter
                     }
 
                     //update direction
-                    if (tanl >= tan1 || tanl <= tan2)
+                    if (Tanl >= Tan1 || Tanl <= Tan2)
                     {
                         if (AreaBigLocal != ((AreaBigger.Centroid.X) < ((Geo as IArea).Centroid.X)))
                         {
@@ -205,11 +205,11 @@ namespace PolygonCuter
                             AreaBigLocal = ((AreaBigger.Centroid.X) < ((Geo as IArea).Centroid.X));
                         }
                     }
-                    else if (tanl > tan2 && tanl < tan1)
+                    else if (Tanl <= Tan1 || Tanl >= Tan2)
                     {
                         if (AreaBigLocal != ((AreaBigger.Centroid.Y) < ((Geo as IArea).Centroid.Y)))
                         {
-                            Direction.X = -Direction.X / 2;
+                            Direction.Y = -Direction.Y / 2;
                             AreaBigLocal = ((AreaBigger.Centroid.Y) < ((Geo as IArea).Centroid.Y));
                         }
                     }
