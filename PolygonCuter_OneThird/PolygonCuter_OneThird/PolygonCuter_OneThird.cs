@@ -2,21 +2,16 @@
 using System.Collections.Generic;
 using System.Text;
 using System.IO;
-using ESRI.ArcGIS.Geometry;
-
-using ESRI.ArcGIS.Controls;
-using System.Linq;
 using ESRI.ArcGIS.Display;
-using ESRI.ArcGIS.Carto;
+using ESRI.ArcGIS.Geometry;
 using ESRI.ArcGIS.Geodatabase;
-using ESRI.ArcGIS.esriSystem;
+using ESRI.ArcGIS.Carto;
 using System.Windows.Forms;
 
-namespace PolygonCuter
+namespace PolygonCuter_OneThird
 {
-    public class PolygonCuter : ESRI.ArcGIS.Desktop.AddIns.Tool
+    public class PolygonCuter_OneThird : ESRI.ArcGIS.Desktop.AddIns.Tool
     {
-
         private bool m_isMouseDown = false;
         private INewLineFeedback m_lineFeedback = null;
         private IPoint m_currentPoint = null;
@@ -24,16 +19,12 @@ namespace PolygonCuter
         private IFeature m_feature = null;
 
 
-        public PolygonCuter()
+        public PolygonCuter_OneThird()
         {
         }
 
         protected override void OnActivate()
         {
-            //set cursor image
-            Stream sm = this.GetType().Assembly.GetManifestResourceStream("PolygonCuter.Images.Sketch.cur");
-            this.Cursor = new System.Windows.Forms.Cursor(sm);
-
             //get selected feature
             IEnumFeature Features = ArcMap.Document.FocusMap.FeatureSelection as IEnumFeature;
             if (Features != null)
@@ -146,7 +137,7 @@ namespace PolygonCuter
 
                 IArea AreaBigger = GeometryCollection.get_Geometry(0) as IArea;
                 IArea AreaSmaller = GeometryCollection.get_Geometry(1) as IArea;
-                if (AreaBigger.Area < AreaSmaller.Area)
+                if (AreaSmaller.Area > ((((IArea)Geo).Area) / 3))
                 {
                     IArea temp = AreaBigger;
                     AreaBigger = AreaSmaller;
@@ -173,23 +164,23 @@ namespace PolygonCuter
                     Direction.Y = (CentroidBigger.Y - CentroidSmaller.Y) / 2;
                     AreaBigLocal = CentroidBigger.Y < ((Geo as IArea).Centroid.Y);
                 }
+                int Count = 0;
 
-
-                 while ((int)AreaBigger.Area != (int)AreaSmaller.Area)
+                while (((int)AreaBigger.Area != (2*((int)AreaSmaller.Area))) && Count < 100)
                 {
                     ESRI.ArcGIS.Geometry.ITransform2D Transform2D = m_line as ESRI.ArcGIS.Geometry.ITransform2D;
                     Transform2D.Move(Direction.X, Direction.Y);
                     IPolyline CurrentLine = Transform2D as IPolyline;
-                    IPoint CurrentCentroidLine = new Point();
-                    CurrentCentroidLine.X = (CurrentLine.FromPoint.X + CurrentLine.ToPoint.X) / 2;
-                    CurrentCentroidLine.Y = (CurrentLine.FromPoint.Y + CurrentLine.ToPoint.Y) / 2;
-                     
-                     //update Geometry
+                    //IPoint CurrentCentroidLine = new Point();
+                    //CurrentCentroidLine.X = (CurrentLine.FromPoint.X + CurrentLine.ToPoint.X) / 2;
+                    //CurrentCentroidLine.Y = (CurrentLine.FromPoint.Y + CurrentLine.ToPoint.Y) / 2;
+
+                    //update Geometry
                     GeometryCollection.RemoveGeometries(0, 2);
                     GeometryCollection = Topo.Cut2(Transform2D as IPolyline);
                     AreaBigger = GeometryCollection.get_Geometry(0) as IArea;
                     AreaSmaller = GeometryCollection.get_Geometry(1) as IArea;
-                    if (AreaBigger.Area < AreaSmaller.Area)
+                    if (AreaSmaller.Area > ((((IArea)Geo).Area)/3))
                     {
                         IArea temp = AreaBigger;
                         AreaBigger = AreaSmaller;
@@ -213,6 +204,7 @@ namespace PolygonCuter
                             AreaBigLocal = ((AreaBigger.Centroid.Y) < ((Geo as IArea).Centroid.Y));
                         }
                     }
+                    Count++;
                 }
 
                 //store feature
@@ -225,14 +217,13 @@ namespace PolygonCuter
                 NewFeature.Store();
                 m_feature.Store();
                 ArcMap.Document.ActiveView.PartialRefresh(esriViewDrawPhase.esriViewGeography, null, null);
-                
+
             }
             catch (Exception e)
             {
                 MessageBox.Show(e.Message);
             }
-
         }
     }
+
 }
-        

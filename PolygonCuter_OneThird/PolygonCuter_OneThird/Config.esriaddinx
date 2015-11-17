@@ -1,0 +1,20 @@
+﻿<ESRI.Configuration xmlns="http://schemas.esri.com/Desktop/AddIns" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <Name>PolygonCuter_OneThird</Name>
+  <AddInID>{ce875edb-d500-4fda-9a8d-4af47a3ce785}</AddInID>
+  <Description>PolygonCuter_OneThird</Description>
+  <Version>1.0</Version>
+  <Image>Images\PolygonCuter_OneThird_1.png</Image>
+  <Author>HR</Author>
+  <Company></Company>
+  <Date>2015/11/17</Date>
+  <Targets>
+    <Target name="Desktop" version="10.0" />
+  </Targets>
+  <AddIn language="CLR" library="PolygonCuter_OneThird.dll" namespace="PolygonCuter_OneThird">
+    <ArcMap>
+      <Commands>
+        <Tool id="PolygonCuter_OneThird_PolygonCuter_OneThird" class="PolygonCuter_OneThird" message="PolygonCuter_OneThird" caption="PolygonCuter_OneThird" tip="PolygonCuter_OneThird" category="Add-In Controls" image="Images\PolygonCuter_OneThird.png" cursor="Images\PolygonCuter_OneThird.cur" />
+      </Commands>
+    </ArcMap>
+  </AddIn>
+</ESRI.Configuration>
