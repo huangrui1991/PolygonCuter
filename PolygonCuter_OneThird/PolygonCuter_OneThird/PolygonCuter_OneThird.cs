@@ -155,13 +155,13 @@ namespace PolygonCuter_OneThird
                 if (Tanl <= Tan1 || Tanl >= Tan2)
                 {
                     Direction.Y = 0;
-                    Direction.X = (CentroidBigger.X - CentroidSmaller.X) / 2;
+                    Direction.X = (CentroidBigger.X - CentroidSmaller.X) / 3;
                     AreaBigLocal = CentroidBigger.X < ((Geo as IArea).Centroid.X);
                 }
                 else if (Tanl > Tan1 && Tanl < Tan2)
                 {
                     Direction.X = 0;
-                    Direction.Y = (CentroidBigger.Y - CentroidSmaller.Y) / 2;
+                    Direction.Y = (CentroidBigger.Y - CentroidSmaller.Y) / 3;
                     AreaBigLocal = CentroidBigger.Y < ((Geo as IArea).Centroid.Y);
                 }
                 int Count = 0;
@@ -180,11 +180,17 @@ namespace PolygonCuter_OneThird
                     GeometryCollection = Topo.Cut2(Transform2D as IPolyline);
                     AreaBigger = GeometryCollection.get_Geometry(0) as IArea;
                     AreaSmaller = GeometryCollection.get_Geometry(1) as IArea;
-                    if (AreaSmaller.Area > ((((IArea)Geo).Area)/3))
+                    if (AreaSmaller.Area > AreaBigger.Area)
                     {
                         IArea temp = AreaBigger;
                         AreaBigger = AreaSmaller;
                         AreaSmaller = temp;
+                        if(AreaSmaller.Area > ((((IArea)Geo).Area)/3))
+                        {
+                            IArea temp2 = AreaBigger;
+                            AreaBigger = AreaSmaller;
+                            AreaSmaller = temp2;
+                        }
                     }
 
                     //update direction
