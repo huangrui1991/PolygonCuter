@@ -1,0 +1,20 @@
+﻿<ESRI.Configuration xmlns="http://schemas.esri.com/Desktop/AddIns" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <Name>MeanCuter</Name>
+  <AddInID>{5e94dd9d-c289-4be1-9469-daa180bd8703}</AddInID>
+  <Description>Cuter Polygon by Mean</Description>
+  <Version>1.0</Version>
+  <Image>Images\MeanCuter_1.png</Image>
+  <Author>HR</Author>
+  <Company></Company>
+  <Date>2015/11/18</Date>
+  <Targets>
+    <Target name="Desktop" version="10.0" />
+  </Targets>
+  <AddIn language="CLR" library="MeanCuter.dll" namespace="MeanCuter">
+    <ArcMap>
+      <Commands>
+        <Tool id="MeanCuter_MeanCuter" class="MeanCuter" message="Cut Polygon by Mean" caption="MeanCuter" tip="MeanCuter" category="MeanCuter" image="Images\MeanCuter.png" cursor="Images\MeanCuter.cur" />
+      </Commands>
+    </ArcMap>
+  </AddIn>
+</ESRI.Configuration>
