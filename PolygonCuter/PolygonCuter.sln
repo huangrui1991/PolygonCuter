@@ -5,6 +5,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PolygonCuter", "PolygonCute
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PolygonCuter_OneThird", "..\PolygonCuter_OneThird\PolygonCuter_OneThird\PolygonCuter_OneThird.csproj", "{A2CC08CF-E8E5-48E3-A36D-09239152E2D7}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MeanCuter", "..\MeanCuter\MeanCuter\MeanCuter.csproj", "{8B8EC5E7-1430-4067-9554-B4BB532D33EF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -19,6 +21,10 @@ Global
 		{A2CC08CF-E8E5-48E3-A36D-09239152E2D7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A2CC08CF-E8E5-48E3-A36D-09239152E2D7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A2CC08CF-E8E5-48E3-A36D-09239152E2D7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8B8EC5E7-1430-4067-9554-B4BB532D33EF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8B8EC5E7-1430-4067-9554-B4BB532D33EF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8B8EC5E7-1430-4067-9554-B4BB532D33EF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8B8EC5E7-1430-4067-9554-B4BB532D33EF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
