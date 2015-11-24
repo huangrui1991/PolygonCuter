@@ -126,6 +126,12 @@ namespace MeanCuter
                 IGeometry Geo = m_feature.Shape;
                 ITopologicalOperator4 Topo = Geo as ITopologicalOperator4;
                 IGeometryCollection GeometryCollection = new GeometryBagClass();
+
+                Topo.IsKnownSimple_2 = false;
+                Topo.Simplify();
+                Geo.SnapToSpatialReference();
+                m_line.SnapToSpatialReference();
+                m_line.SpatialReference = Geo.SpatialReference;
                 GeometryCollection = Topo.Cut2(m_line);
 
                 //if (GeometryCollection.GeometryCount == 0 || GeometryCollection.GeometryCount > 2)
@@ -159,23 +165,26 @@ namespace MeanCuter
                 IPoint CentroidLine = new Point();
                 CentroidLine.X = (BeginPoint.X + EndPoint.X) / 2;
                 CentroidLine.Y = (BeginPoint.Y + EndPoint.Y) / 2;
+                double MinDirection = 0;
 
                 bool AreaBigLocal = false;
                 if (Tanl <= Tan1 || Tanl >= Tan2)
                 {
                     Direction.Y = 0;
                     Direction.X = (CentroidBigger.X - CentroidSmaller.X) / CutParam;
+                    MinDirection = (CentroidBigger.X - CentroidSmaller.X) / 100.0;
                     AreaBigLocal = CentroidBigger.X < ((Geo as IArea).Centroid.X);
                 }
                 else if (Tanl > Tan1 && Tanl < Tan2)
                 {
                     Direction.X = 0;
                     Direction.Y = (CentroidBigger.Y - CentroidSmaller.Y) / CutParam;
+                    MinDirection = (CentroidBigger.Y - CentroidSmaller.Y) / 1000.0;
                     AreaBigLocal = CentroidBigger.Y < ((Geo as IArea).Centroid.Y);
                 }
                 int Count = 0;
 
-                while (((int)AreaBigger.Area != ((CutParam - 1) * ((int)AreaSmaller.Area))) && Count < 200)
+                while (((int)AreaSmaller.Area != (int)(((IArea)Geo).Area / CutParam)))
                 {
                     ESRI.ArcGIS.Geometry.ITransform2D Transform2D = m_line as ESRI.ArcGIS.Geometry.ITransform2D;
                     Transform2D.Move(Direction.X, Direction.Y);
@@ -208,6 +217,10 @@ namespace MeanCuter
                         if (AreaBigLocal != ((AreaBigger.Centroid.X) < ((Geo as IArea).Centroid.X)))
                         {
                             Direction.X = -Direction.X / 2;
+                            bool IsNegative = Direction.X < 0;
+                            Direction.X = (System.Math.Abs(Direction.X) < MinDirection) ? MinDirection : System.Math.Abs(Direction.X);
+                            if (IsNegative)
+                                Direction.X = -Direction.X;
                             AreaBigLocal = ((AreaBigger.Centroid.X) < ((Geo as IArea).Centroid.X));
                         }
                     }
@@ -216,10 +229,40 @@ namespace MeanCuter
                         if (AreaBigLocal != ((AreaBigger.Centroid.Y) < ((Geo as IArea).Centroid.Y)))
                         {
                             Direction.Y = -Direction.Y / 2;
+                            bool IsNegative = Direction.Y < 0;
+                            Direction.Y = (System.Math.Abs(Direction.Y) < MinDirection) ? MinDirection : System.Math.Abs(Direction.Y);
+                            if (IsNegative)
+                                Direction.Y = -Direction.Y;
                             AreaBigLocal = ((AreaBigger.Centroid.Y) < ((Geo as IArea).Centroid.Y));
                         }
                     }
                     Count++;
+                    if (Count > 10000)
+                    {
+                        //if (AreaSmaller.Area > AreaBigger.Area)
+                        //{
+                        //    IArea temp = AreaBigger;
+                        //    AreaBigger = AreaSmaller;
+                        //    AreaSmaller = temp;
+                        //}
+                        //if (CutParam > 7 && (((int)AreaSmaller.Area <= (int)(((IArea)Geo).Area / CutParam) + 3)) && ((int)AreaSmaller.Area > (int)(((IArea)Geo).Area / CutParam)))
+                        //{
+                        //    break;
+                        //}
+                        //else if (CutParam <= 7 && CutParam > 5 && (((int)AreaSmaller.Area <= (int)(((IArea)Geo).Area / CutParam) + 2)) && ((int)AreaSmaller.Area > (int)(((IArea)Geo).Area / CutParam)))
+                        //{
+                        //    break;
+                        //}
+                        //else if (CutParam <= 5 && CutParam >= 3 && (((int)AreaSmaller.Area <= (int)(((IArea)Geo).Area / CutParam) + 1)) && ((int)AreaSmaller.Area > (int)(((IArea)Geo).Area / CutParam) ))
+                        //{
+                        //    break;
+                        //}
+                        //else
+                        //{
+                            Exception e = new Exception("迭代失败！");
+                            throw e;
+                        //}
+                    }
                 }
 
                 //store feature
