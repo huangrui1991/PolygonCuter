@@ -196,9 +196,14 @@ namespace MeanCuter
                     //update Geometry
                     GeometryCollection.RemoveGeometries(0, 2);
                     GeometryCollection = Topo.Cut2(Transform2D as IPolyline);
+                    if (GeometryCollection.GeometryCount >= 3)
+                    {
+                        Exception e = new Exception("不能将图块切割成三份，请调整切割线位置");
+                        throw e;
+                    }
                     AreaBigger = GeometryCollection.get_Geometry(0) as IArea;
                     AreaSmaller = GeometryCollection.get_Geometry(1) as IArea;
-                    if (AreaSmaller.Area > AreaBigger.Area)
+                     if (AreaSmaller.Area > AreaBigger.Area)
                     {
                         IArea temp = AreaBigger;
                         AreaBigger = AreaSmaller;
@@ -217,10 +222,10 @@ namespace MeanCuter
                         if (AreaBigLocal != ((AreaBigger.Centroid.X) < ((Geo as IArea).Centroid.X)))
                         {
                             Direction.X = -Direction.X / 2;
-                            bool IsNegative = Direction.X < 0;
-                            Direction.X = (System.Math.Abs(Direction.X) < MinDirection) ? MinDirection : System.Math.Abs(Direction.X);
-                            if (IsNegative)
-                                Direction.X = -Direction.X;
+                            //bool IsNegative = Direction.X < 0;
+                            //Direction.X = (System.Math.Abs(Direction.X) < MinDirection) ? MinDirection : System.Math.Abs(Direction.X);
+                            //if (IsNegative)
+                            //    Direction.X = -Direction.X;
                             AreaBigLocal = ((AreaBigger.Centroid.X) < ((Geo as IArea).Centroid.X));
                         }
                     }
@@ -229,15 +234,15 @@ namespace MeanCuter
                         if (AreaBigLocal != ((AreaBigger.Centroid.Y) < ((Geo as IArea).Centroid.Y)))
                         {
                             Direction.Y = -Direction.Y / 2;
-                            bool IsNegative = Direction.Y < 0;
-                            Direction.Y = (System.Math.Abs(Direction.Y) < MinDirection) ? MinDirection : System.Math.Abs(Direction.Y);
-                            if (IsNegative)
-                                Direction.Y = -Direction.Y;
+                            //bool IsNegative = Direction.Y < 0;
+                            //Direction.Y = (System.Math.Abs(Direction.Y) < MinDirection) ? MinDirection : System.Math.Abs(Direction.Y);
+                            //if (IsNegative)
+                            //    Direction.Y = -Direction.Y;
                             AreaBigLocal = ((AreaBigger.Centroid.Y) < ((Geo as IArea).Centroid.Y));
                         }
                     }
                     Count++;
-                    if (Count > 10000)
+                    if (Count > 500)
                     {
                         //if (AreaSmaller.Area > AreaBigger.Area)
                         //{
